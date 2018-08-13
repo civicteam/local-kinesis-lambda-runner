@@ -1,3 +1,5 @@
+const waitTimeBetweenPolls = process.env.WAIT_TIME || 500;
+
 module.exports = (kinesis, StreamName, logger) => {
   const wait = ms => () => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -22,7 +24,7 @@ module.exports = (kinesis, StreamName, logger) => {
     const fetchAndProcessRecords = shardIterator => (
       kinesis.getRecords({ ShardIterator: shardIterator }).promise().then(records => (
         records.Records.reduce(reduceRecord(lambda), Promise.resolve())
-          .then(wait(500))
+          .then(wait(waitTimeBetweenPolls))
           .then(() => fetchAndProcessRecords(records.NextShardIterator))
       ))
     );
